@@ -1,12 +1,20 @@
 ---
 name: pii_detection
-description: PII and sensitive data column name patterns and value-level detection rules for banking/insurance contexts. Load this when performing the PII check phase before any profiling.
+description: PII and sensitive data column name patterns and value-level detection rules. Load this for the name-only PII gate in Quick Scan (no queries) and for value-level scanning in Deep Profile.
 type: reference
 ---
 
 # PII and Sensitive Data Detection Patterns
 
-Check column names (case-insensitive substring match) against these patterns BEFORE running any profiling queries. Also scan sample values for value-level PII. Warn the user for any match and require explicit confirmation before profiling flagged columns.
+## Quick Scan: Name-Only Gate (no queries)
+
+Check column names (case-insensitive substring match) against the patterns below BEFORE running any profiling queries. No sample values needed — column names only.
+
+Warn the user for any match and require explicit confirmation before including HIGH RISK columns in any output.
+
+## Deep Profile: Value-Level Scan
+
+In addition to name patterns, scan sample values (top 10 rows) for value-level PII patterns (SSN format, email, phone, credit card) using the regex table at the bottom of this file.
 
 ## HIGH Risk: Always Warn — Require Explicit Confirmation
 
@@ -67,26 +75,25 @@ For columns not caught by name patterns, run the following regex checks on sampl
 
 ## Warning Template
 
-Output this warning when PII columns are detected:
+Output this warning when PII column names are detected (Quick Scan — name check only, no queries run yet):
 
 ```
-WARNING: SENSITIVE DATA DETECTED
+WARNING: SENSITIVE COLUMN NAMES DETECTED
 
-The following columns match PII/sensitive data patterns:
+The following columns match PII/sensitive data patterns (name check only):
 
-HIGH RISK (require explicit confirmation before profiling):
+HIGH RISK (require explicit confirmation before including in output):
   - {column_name} → pattern: {pattern} | regulation: {scope}
 
-MEDIUM RISK (proceed with care):
+MEDIUM RISK (noted, will be included with care):
   - {column_name} → pattern: {pattern}
 
-Before profiling sensitive columns:
-1. Confirm authorization to access this data
-2. Note that SQL query logs may capture values
-3. Consider using hashed/masked versions for analysis
+Before proceeding:
+1. Confirm you are authorized to access this data
+2. Note that SQL query logs may capture values during profiling
 
-Proceed with profiling HIGH RISK columns? (y/n)
-If 'n', these columns will be excluded from profiling.
+Include HIGH RISK columns in the profile? (y/n)
+If 'n', these columns will be excluded and noted as "Excluded — PII risk".
 ```
 
 ## PII-Safe Profiling Approach
